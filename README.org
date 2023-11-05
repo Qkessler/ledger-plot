@@ -1,0 +1,40 @@
+* =ledger-plot=
+
+=ledger-plot= is a CLI written in Rust to plot relevant data for your ledger reports and overall balance. It can be used to get a quick glance at your finances on an arbitrary time range, your wealth growth or other relevant reports from just a simple =.ledger= file.
+
+From a =.ledger= file, we'll parse the transactions and process the data for you.
+
+
+** Implementation notes
+What I'm thinking is whether we actually want to be parsing all the transactions ourselves or we can offload some of the work to the actual ledger CLI, which already has most of the "reports" that we are trying to build generated. We could then parse the results and use that to build our graphs. Probably something to consider.
+
+Let's see if there are Rust bindings for Ledger CLI. There aren't any Rust bindings to the CLI. We have to define the different use cases that I want to implement and then decide whether we want to do them manually with the parsed Transactions, or move forward with offloading the work to Ledger CLI.
+
+Plus, let's talk caching. We can know from the next iteration whether a file being passed was modified or not. If it wasn't modified, there isn't a reason to actually reparse everything, if that saved x amount of ms. Nevertheless, probably it's an early optimization and we should focus on getting the thing done first.
+
+Here are the use cases I'm thinking about
+
+1. Time series plot: Display the transaction amounts over time, giving insights into the spending or income patterns of the individual. This plot can help identify any trends, seasonality, or periodic patterns.
+
+2. Categorical bar plot: Analyze the distribution of transaction categories (e.g., groceries, bills, entertainment) to understand the individual's spending habits and identify any high or low spending areas. We can have x amount of colors to show differences through the months of spending.
+
+3. Pie chart or donut chart: Highlight the percentage distribution of transactions in different categories, providing a visual breakdown of spending across different expense types.
+
+4. Monthly/Yearly summary plot: Summarize the total expenses or income for each month or year, allowing the individual to see their financial performance over time.
+
+5. Portfolio Value Over Time: Plot the value of their investment portfolio over time, including both stocks and real estate. This plot helps visualize the growth and fluctuations in their overall wealth.
+
+6. Asset Allocation Pie Chart: Display the allocation of their wealth across different asset classes, such as stocks, real estate, bonds, or cash. This visual representation helps individuals understand the diversification and concentration of their portfolio.
+
+7. Cash Flow Statement: Showcase the inflows and outflows of money over time, including investment contributions, dividends, rental income, expenses, and mortgage payments. This plot allows individuals to track their overall cash flow and identify areas of improvement.
+
+8. Return on Investment (ROI) Comparison: Compare the ROI of different investment assets over different time periods. This plot aids in evaluating the effectiveness of various wealth-building strategies and identifying the most successful investments.
+
+** Benchmarks
+First iteration, just parsing the files. It seems like parsing a 5000 line file we take 10ms.
+#+begin_src shell
+  hyperfine -N --warmup 3 './target/release/ledger-plot -f /tmp/current-copy.ledger'
+  Benchmark 1: ./target/release/ledger-plot -f /tmp/current-copy.ledger
+    Time (mean ± σ):      10.0 ms ±   1.4 ms    [User: 4.2 ms, System: 2.0 ms]
+    Range (min … max):     7.0 ms …  13.7 ms    254 runs
+#+end_src
