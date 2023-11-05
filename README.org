@@ -4,7 +4,6 @@
 
 From a =.ledger= file, we'll parse the transactions and process the data for you.
 
-
 ** Implementation notes
 What I'm thinking is whether we actually want to be parsing all the transactions ourselves or we can offload some of the work to the actual ledger CLI, which already has most of the "reports" that we are trying to build generated. We could then parse the results and use that to build our graphs. Probably something to consider.
 
@@ -29,6 +28,16 @@ Here are the use cases I'm thinking about
 7. Cash Flow Statement: Showcase the inflows and outflows of money over time, including investment contributions, dividends, rental income, expenses, and mortgage payments. This plot allows individuals to track their overall cash flow and identify areas of improvement.
 
 8. Return on Investment (ROI) Comparison: Compare the ROI of different investment assets over different time periods. This plot aids in evaluating the effectiveness of various wealth-building strategies and identifying the most successful investments.
+
+*** Transactions ergonomy
+What I see is happening with the Transactions object is that it takes the Postings, which is not great, because we don't really know the "impact" on the accounts from it. Let's see some examples.
+#+begin_example
+Transaction { comment: None, date: 2023-11-03, effective_date: None, status: Some(Cleared), code: None, description: "Liquidacion De Las Tarjetas De Credito Del Contrato 0049 6773 502 1909957", postings: [Posting { account: "Assets:Checking", reality: Real, amount: Some(PostingAmount { amount: Amount { quantity: -1.99, commodity: Commodity { name: "€", position: Right } }, lot_price: None, price: None }), balance: None, status: None, comment: None }, Posting { account: "Expenses:Food:Social", reality: Real, amount: None, balance: None, status: None, comment: None }] }
+#+end_example
+
+What we know from the postings, is that each of the accounts is impacted by X, and since Ledger by nature is a 0 sum reporting system, if we are in the red, and any posting does not have an amount associated with it, we make sure the remaining sum is 0. So for that scenario, the could would do:
+- Assets:Checking, -1.99, €
+- Expenses:Food:Social, 0 - (- 1.99) = 1.99, €
 
 ** Benchmarks
 First iteration, just parsing the files. It seems like parsing a 5000 line file we take 10ms.

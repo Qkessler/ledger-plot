@@ -21,7 +21,10 @@ async fn collect_transactions(
         .items
         .into_iter()
         .map(|item| match item {
-            LedgerItem::Transaction(transaction) => transaction,
+            LedgerItem::Transaction(transaction) => {
+                println!("{:?}", transaction);
+                transaction
+            },
             _ => todo!(),
         })
         .collect())
@@ -62,7 +65,6 @@ async fn parse_transactions(path: &str) -> Result<Vec<Transaction>, Box<dyn std:
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
-    println!("{:?}", args.files);
-    parse_transactions(&args.files[0]).await?;
+    parse_transactions(&args.files[0]).await?; // on hyperfine and my machine, this takes 10ms
     Ok(())
 }
