@@ -11,7 +11,7 @@ Let's see if there are Rust bindings for Ledger CLI. There aren't any Rust bindi
 
 Plus, let's talk caching. We can know from the next iteration whether a file being passed was modified or not. If it wasn't modified, there isn't a reason to actually reparse everything, if that saved x amount of ms. Nevertheless, probably it's an early optimization and we should focus on getting the thing done first.
 
-Here are the use cases I'm thinking about
+Here are the use cases I'm thinking about:
 
 1. Time series plot: Display the transaction amounts over time, giving insights into the spending or income patterns of the individual. This plot can help identify any trends, seasonality, or periodic patterns.
 
@@ -38,6 +38,10 @@ Transaction { comment: None, date: 2023-11-03, effective_date: None, status: Som
 What we know from the postings, is that each of the accounts is impacted by X, and since Ledger by nature is a 0 sum reporting system, if we are in the red, and any posting does not have an amount associated with it, we make sure the remaining sum is 0. So for that scenario, the could would do:
 - Assets:Checking, -1.99, €
 - Expenses:Food:Social, 0 - (- 1.99) = 1.99, €
+
+With that, we need another data structure to hold the information for each of the accounts, in real time. We want to have the data aggregated by day, month, year, but that can also be computed in real time. Basically, we want to make sure we have all the actual postings per account.
+
+That sounds like a HashMap, where we could have the account name as the key, and a Set as the value. TODO Would that take too much mem when running the program if we have a big data set? We would need to check.
 
 ** Benchmarks
 First iteration, just parsing the files. It seems like parsing a 5000 line file we take 10ms.

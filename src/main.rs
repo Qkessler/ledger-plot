@@ -1,3 +1,5 @@
+mod accounts;
+
 use clap::Parser;
 use ledger_parser::{LedgerItem, Transaction};
 
