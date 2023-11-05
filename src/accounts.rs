@@ -6,7 +6,7 @@ use rust_decimal::Decimal;
 // for each account, I need to know the postings individually
 // with their dates, but also need to know the currency, because it's possible
 // for the same account, we have different currencies (though rare).
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct Accounts {
     pub postings_per_account: HashMap<String, Vec<Decimal>>,
 }

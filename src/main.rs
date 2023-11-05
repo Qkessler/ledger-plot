@@ -1,5 +1,6 @@
 mod accounts;
 
+use accounts::Accounts;
 use clap::Parser;
 use ledger_parser::{LedgerItem, Transaction};
 
@@ -67,6 +68,10 @@ async fn parse_transactions(path: &str) -> Result<Vec<Transaction>, Box<dyn std:
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
-    parse_transactions(&args.files[0]).await?; // on hyperfine and my machine, this takes 10ms
+    let mut accounts = Accounts::default();
+
+    // TODO Remove this copy on Transaction, we could pass &transaction.
+    parse_transactions(&args.files[0]).await?.into_iter().for_each(|transaction| accounts.update_accounts(transaction));
+    println!("{:#?}", accounts);
     Ok(())
 }
