@@ -51,3 +51,12 @@ First iteration, just parsing the files. It seems like parsing a 5000 line file 
     Time (mean ± σ):      10.0 ms ±   1.4 ms    [User: 4.2 ms, System: 2.0 ms]
     Range (min … max):     7.0 ms …  13.7 ms    254 runs
 #+end_src
+
+What happened here. Can we speed it up? Probs we can be async when adding transactions, careful with race conditions though.
+#+begin_src shell
+  ❯ hyperfine -N --warmup 3 './target/release/ledger-plot -f /tmp/current-copy.ledger'
+  Benchmark 1: ./target/release/ledger-plot -f /tmp/current-copy.ledger
+    Time (mean ± σ):     529.2 ms ±   4.1 ms    [User: 14.0 ms, System: 6.8 ms]
+    Range (min … max):   523.9 ms … 538.4 ms    10 runs
+
+#+end_src

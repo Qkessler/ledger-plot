@@ -72,6 +72,5 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // TODO Remove this copy on Transaction, we could pass &transaction.
     parse_transactions(&args.files[0]).await?.into_iter().for_each(|transaction| accounts.update_accounts(transaction));
-    println!("{:#?}", accounts);
     Ok(())
 }
