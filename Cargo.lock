@@ -104,6 +104,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "anyhow"
+version = "1.0.75"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a4668cab20f66d8d020e1fbc0ebe47217433c1b6c8f2040faf858554e394ace6"
+
+[[package]]
 name = "arrayvec"
 version = "0.7.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -762,13 +768,17 @@ dependencies = [
 name = "ledger-plot"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "chrono",
  "clap",
  "futures",
  "ledger-parser",
  "map-macro",
  "plotters",
+ "plotters-backend",
+ "rand",
  "rust_decimal",
+ "scc",
  "tokio",
  "tokio-util",
 ]
@@ -1239,6 +1249,12 @@ checksum = "93fc1dc3aaa9bfed95e02e6eadabb4baf7e3078b0bd1b4d7b6b0b68378900502"
 dependencies = [
  "winapi-util",
 ]
+
+[[package]]
+name = "scc"
+version = "2.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ca628bbcc4be16ffaeae429444cf4538d7a23b1aa5457cc9ce9a220286befbc3"
 
 [[package]]
 name = "scopeguard"

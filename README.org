@@ -29,6 +29,15 @@ Here are the use cases I'm thinking about:
 
 8. Return on Investment (ROI) Comparison: Compare the ROI of different investment assets over different time periods. This plot aids in evaluating the effectiveness of various wealth-building strategies and identifying the most successful investments.
 
+We are not passing the copy to Transaction, but rather owning the value itself, creating our accounts hashmap, which is the one that will provide all the info we need when doing the queries for building the graphs. I'm thinking whether in this case it makes sense to have a temporary DB for the user. We would take time to build the DB, but be fast to query it. I don't think it's worth the hassle, probably it's not going to take less than 500ms which we benchmarked today. I'm thinking how we can optimize the saving and storing further.
+
+For now, let's focus on Getting It Done, we want to have something that works and then move on to the next thing. We want the community to use it, so we should optimize for the user. If we feel the user experience is bad when loading a file directly, we could have a command to cache and others to query, which could be closer to the user experience.
+
+*** Account over time: Time series plot
+It seems like Plotters does not yet have a console backend, but we have WASM, we have other stuff we can try. Nevertheless, I want to play with the console support, since it seems like something I would probably use, more than having a REVIEW Axium web server running and updating from the files in a directory, although definitely an interesting idea.
+
+Ref: https://github.com/plotters-rs/plotters/blob/master/plotters/examples/console.rs. Let's play with it.
+
 *** Transactions ergonomy
 What I see is happening with the Transactions object is that it takes the Postings, which is not great, because we don't really know the "impact" on the accounts from it. Let's see some examples.
 #+begin_example

@@ -1,7 +1,12 @@
 use std::collections::HashMap;
+use std::error::Error;
 
+use anyhow::{Context, Result};
 use ledger_parser::{Posting, Transaction};
-use rust_decimal::Decimal;
+use plotters::prelude::*;
+use plotters_backend::DrawingBackend;
+use rand::Rng;
+use rust_decimal::prelude::*;
 
 // for each account, I need to know the postings individually
 // with their dates, but also need to know the currency, because it's possible
@@ -12,6 +17,7 @@ pub struct Accounts {
 }
 
 impl Accounts {
+    #[cfg(test)]
     pub fn new(postings_per_account: HashMap<String, Vec<Decimal>>) -> Accounts {
         Accounts {
             postings_per_account,
@@ -40,6 +46,73 @@ impl Accounts {
                 .or_default()
                 .push(zero_sum_count);
         }
+    }
+
+    pub fn draw_balance_for_account<DB: DrawingBackend>(
+        &self,
+        b: DrawingArea<DB, plotters::coord::Shift>,
+        account: &str,
+    ) -> Result<(), Box<dyn Error>>
+    where
+        DB::ErrorType: 'static,
+    {
+        // TODO: we don't have the starting balance for the accounts. Can we run Ledger for that?
+        // probably we can assume that the users have an opening balance for their accounts, otherwise they
+        // won't have any meaningful reports.
+        let postings = self
+            .postings_per_account
+            .get(account)
+            .with_context(|| format!("account {} could not be found", account))?;
+        println!("{:?}", &postings);
+
+        // REVIEW: Something to probably optimize on insert if we wanted to.
+        // REVIEW: What happens if we have negative max and min postings? We want to consider cases like Income,
+        // where we might fill say, a Checking account using an Income account, which ends up negative with zero sum.
+        let max_posting = postings
+            .iter()
+            .max()
+            .expect("if account is present, there should be a posting");
+        let min_posting = postings
+            .iter()
+            .min()
+            .expect("if account is present, there should be a posting");
+        println!("{:?}, {:?}", max_posting, min_posting);
+
+        let y_max = max_posting.to_i32().expect("Decimal posting should work") + 10;
+        let y_min = min_posting.to_i32().expect("Decimal posting should work") - 10;
+        println!("y_max {y_max}, y_min {y_min}");
+
+        let mut chart = ChartBuilder::on(&b)
+            .x_label_area_size(35)
+            .y_label_area_size(40)
+            .margin(10)
+            .caption(
+                format!("Balance for {}", account),
+                ("sans-serif", (6).percent_height()),
+            )
+            .build_cartesian_2d((0u32..10u32).into_segmented(), y_min..y_max)?;
+
+        chart
+            .configure_mesh()
+            // .disable_mesh()
+            .bold_line_style(WHITE.mix(0.3))
+            .y_desc("Balance")
+            .x_desc("Time")
+            .axis_desc_style(("sans-serif", (4).percent_height()))
+            .draw()?;
+
+        chart.draw_series(
+            Histogram::vertical(&chart)
+                .style(BLUE.mix(0.5).filled())
+                .data(postings.iter().map(|amount| {
+                    (
+                        amount.to_u32().expect("Decimal amount should work"),
+                        rand::thread_rng().gen_range(0..10),
+                    )
+                })),
+        )?;
+
+        Ok(())
     }
 }
 

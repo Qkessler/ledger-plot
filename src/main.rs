@@ -1,10 +1,14 @@
 mod accounts;
+mod console;
 
 use accounts::Accounts;
+use console::{TextDrawingBackend, PixelState};
+
 use clap::Parser;
 use ledger_parser::{LedgerItem, Transaction};
 
 use futures::stream::TryStreamExt;
+use plotters::prelude::*;
 use tokio::fs::File;
 use tokio::io::BufReader;
 use tokio_util::codec::{FramedRead, LinesCodec};
@@ -25,11 +29,12 @@ async fn collect_transactions(
         .into_iter()
         .map(|item| match item {
             LedgerItem::Transaction(transaction) => {
-                println!("{:?}", transaction);
-                transaction
-            },
-            _ => todo!(),
+                Some(transaction)
+            }
+            _ => None,
         })
+        .filter(|item| item.is_some())
+        .map(|item| item.unwrap())
         .collect())
 }
 
@@ -70,7 +75,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
     let mut accounts = Accounts::default();
 
-    // TODO Remove this copy on Transaction, we could pass &transaction.
-    parse_transactions(&args.files[0]).await?.into_iter().for_each(|transaction| accounts.update_accounts(transaction));
+    parse_transactions(&args.files[0])
+        .await?
+        .into_iter()
+        .for_each(|transaction| accounts.update_accounts(transaction));
+
+    let b = BitMapBackend::new(console::OUT_FILE_NAME, (1920, 1080)).into_drawing_area();
+    b.fill(&WHITE)?;
+    accounts.draw_balance_for_account(b, "Income:Amazon")?;
+    // console::draw_chart(b)?;
+
+    println!("Image result has been saved to {}", console::OUT_FILE_NAME);
+
     Ok(())
 }
