@@ -1,12 +1,9 @@
-use std::collections::HashMap;
-use std::error::Error;
-
-use anyhow::{Context, Result};
-use ledger_parser::{Posting, Transaction};
+use anyhow::Context;
+use ledger_parser::Transaction;
 use plotters::prelude::*;
 use plotters_backend::DrawingBackend;
-use rand::Rng;
 use rust_decimal::prelude::*;
+use std::collections::HashMap;
 
 // for each account, I need to know the postings individually
 // with their dates, but also need to know the currency, because it's possible
@@ -26,7 +23,7 @@ impl Accounts {
 
     pub fn update_accounts(&mut self, transaction: Transaction) {
         let mut zero_sum_count = Decimal::ZERO;
-        let mut zero_sum_posting: Option<Posting> = None;
+        let mut zero_sum_posting = None;
         for posting in transaction.postings {
             if posting.amount == None {
                 zero_sum_posting = Some(posting);
@@ -52,7 +49,7 @@ impl Accounts {
         &self,
         b: DrawingArea<DB, plotters::coord::Shift>,
         account: &str,
-    ) -> Result<(), Box<dyn Error>>
+    ) -> anyhow::Result<()>
     where
         DB::ErrorType: 'static,
     {
@@ -101,16 +98,7 @@ impl Accounts {
             .axis_desc_style(("sans-serif", (4).percent_height()))
             .draw()?;
 
-        chart.draw_series(
-            Histogram::vertical(&chart)
-                .style(BLUE.mix(0.5).filled())
-                .data(postings.iter().map(|amount| {
-                    (
-                        amount.to_u32().expect("Decimal amount should work"),
-                        rand::thread_rng().gen_range(0..10),
-                    )
-                })),
-        )?;
+        // draw the line series or time series
 
         Ok(())
     }
@@ -119,7 +107,7 @@ impl Accounts {
 #[cfg(test)]
 mod tests {
     use chrono::Utc;
-    use ledger_parser::{Amount, Commodity, CommodityPosition, PostingAmount, Reality};
+    use ledger_parser::{Amount, Commodity, CommodityPosition, Posting, PostingAmount, Reality};
     use map_macro::hash_map;
 
     use super::*;

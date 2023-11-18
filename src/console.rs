@@ -1,15 +1,12 @@
-use plotters::prelude::*;
 use plotters::style::text_anchor::{HPos, VPos};
 use plotters_backend::{
     BackendColor, BackendStyle, BackendTextStyle, DrawingBackend, DrawingErrorKind,
 };
-use std::error::Error;
 
 pub const OUT_FILE_NAME: &str = "plotters-doc-data/console-example.png";
 
 #[derive(Copy, Clone)]
 pub enum PixelState {
-    Empty,
     HLine,
     VLine,
     Cross,
@@ -21,7 +18,6 @@ pub enum PixelState {
 impl PixelState {
     fn to_char(self) -> char {
         match self {
-            Self::Empty => ' ',
             Self::HLine => '-',
             Self::VLine => '|',
             Self::Cross => '+',
@@ -149,38 +145,4 @@ impl DrawingBackend for TextDrawingBackend {
         }
         Ok(())
     }
-}
-
-pub fn draw_chart<DB: DrawingBackend>(
-    b: DrawingArea<DB, plotters::coord::Shift>,
-) -> Result<(), Box<dyn Error>>
-where
-    DB::ErrorType: 'static,
-{
-    let mut chart = ChartBuilder::on(&b)
-        .margin(1)
-        .caption("Sine and Cosine", ("sans-serif", (10).percent_height()))
-        .set_label_area_size(LabelAreaPosition::Left, (5i32).percent_width())
-        .set_label_area_size(LabelAreaPosition::Bottom, (10i32).percent_height())
-        .build_cartesian_2d(-std::f64::consts::PI..std::f64::consts::PI, -1.2..1.2)?;
-
-    chart
-        .configure_mesh()
-        .disable_x_mesh()
-        .disable_y_mesh()
-        .draw()?;
-
-    chart.draw_series(LineSeries::new(
-        (-314..314).map(|x| x as f64 / 100.0).map(|x| (x, x.sin())),
-        &RED,
-    ))?;
-
-    chart.draw_series(LineSeries::new(
-        (-314..314).map(|x| x as f64 / 100.0).map(|x| (x, x.cos())),
-        &RED,
-    ))?;
-
-    b.present()?;
-
-    Ok(())
 }

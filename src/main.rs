@@ -2,7 +2,6 @@ mod accounts;
 mod console;
 
 use accounts::Accounts;
-use console::{TextDrawingBackend, PixelState};
 
 use clap::Parser;
 use ledger_parser::{LedgerItem, Transaction};
@@ -40,6 +39,7 @@ async fn collect_transactions(
 
 async fn parse_transactions(path: &str) -> Result<Vec<Transaction>, Box<dyn std::error::Error>> {
     let file = File::open(path).await?;
+    println!("we get to after the file is opened");
     let reader = BufReader::new(file);
     let mut transactions: Vec<Transaction> = Vec::new();
     let mut lines = FramedRead::new(reader, LinesCodec::new());

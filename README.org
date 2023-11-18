@@ -38,6 +38,13 @@ It seems like Plotters does not yet have a console backend, but we have WASM, we
 
 Ref: https://github.com/plotters-rs/plotters/blob/master/plotters/examples/console.rs. Let's play with it.
 
+Now we should think that we must have the time series data directly, and the date for each of the transactions. I'm thinking what would be the most efficient way to store the data, based on what should be accessed in what order.
+
+1. If we access the info for an account more, rather than accessing for all accounts, we should store as the partition key, the account str.
+2. On the other hand, if we have more reports using all the accounts at the same time, we should probably store the dates as the partition key, as we might need to have all the transactions (regardless of their account) for a specific time range.
+
+All reports seem in relation with the date, hence, why I'm going to be searching for a datastructure that considers dates, let's see what's out there.
+
 *** Transactions ergonomy
 What I see is happening with the Transactions object is that it takes the Postings, which is not great, because we don't really know the "impact" on the accounts from it. Let's see some examples.
 #+begin_example
@@ -69,3 +76,8 @@ What happened here. Can we speed it up? Probs we can be async when adding transa
     Range (min … max):   523.9 ms … 538.4 ms    10 runs
 
 #+end_src
+
+#+begin_example
+./target/release/ledger-plot -f $(fd --absolute-path --base-directory ~/Documents/finances/years ledger) ~/Documents/finances/current.ledger
+#+end_example
+
